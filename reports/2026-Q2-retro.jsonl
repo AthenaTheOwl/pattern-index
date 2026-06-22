@@ -1,0 +1,10 @@
+{"type":"summary","quarter":"2026-Q2","applications_reviewed":10,"source_repos_represented":6,"pattern_ids_represented":5}
+{"type":"pattern_count","quarter":"2026-Q2","pattern_id":"citation-faithful-extraction","count":2}
+{"type":"pattern_count","quarter":"2026-Q2","pattern_id":"dec-then-implement","count":2}
+{"type":"pattern_count","quarter":"2026-Q2","pattern_id":"eval-as-gate","count":2}
+{"type":"pattern_count","quarter":"2026-Q2","pattern_id":"typed-artifact-discipline","count":2}
+{"type":"pattern_count","quarter":"2026-Q2","pattern_id":"voice-lint-as-spec-check","count":2}
+{"type":"outcome_count","quarter":"2026-Q2","outcome":"abandoned","count":1}
+{"type":"outcome_count","quarter":"2026-Q2","outcome":"did-not-work","count":1}
+{"type":"outcome_count","quarter":"2026-Q2","outcome":"still-open","count":6}
+{"type":"outcome_count","quarter":"2026-Q2","outcome":"worked","count":2}

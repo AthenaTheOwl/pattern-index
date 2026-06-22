@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://athenatheowl.local/pattern-index/pattern_application.schema.json",
+  "title": "Pattern Application",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "pattern_id",
+    "source_repo",
+    "dec_ref",
+    "target_domain",
+    "applied_at",
+    "outcome",
+    "outcome_recorded_at",
+    "outcome_evidence"
+  ],
+  "properties": {
+    "pattern_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+    },
+    "source_repo": {
+      "type": "string",
+      "minLength": 1
+    },
+    "dec_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "target_domain": {
+      "type": "string",
+      "minLength": 1
+    },
+    "applied_at": {
+      "type": "string",
+      "format": "date"
+    },
+    "outcome": {
+      "enum": ["worked", "did-not-work", "still-open", "abandoned"]
+    },
+    "outcome_recorded_at": {
+      "type": ["string", "null"],
+      "format": "date"
+    },
+    "outcome_evidence": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 1
+    }
+  }
+}
