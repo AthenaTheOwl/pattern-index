@@ -10,6 +10,15 @@ from pattern_index.retro import write_retro
 from pattern_index.validators import validate_outcomes, validate_schema
 
 
+def _default_patterns_dir() -> Path:
+    """The bundled patterns/ corpus at the repo root.
+
+    Lets `python -m pattern_index validate` run with no positional arg
+    against the committed corpus.
+    """
+    return Path(__file__).resolve().parents[2] / "patterns"
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="pattern-index")
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -20,7 +29,13 @@ def build_parser() -> argparse.ArgumentParser:
     mine.add_argument("--primary-domain")
 
     validate = subparsers.add_parser("validate", help="validate patterns corpus")
-    validate.add_argument("patterns_dir", type=Path)
+    validate.add_argument(
+        "patterns_dir",
+        type=Path,
+        nargs="?",
+        default=None,
+        help="Patterns dir to validate. Defaults to the bundled patterns/ corpus.",
+    )
 
     retro = subparsers.add_parser("retro", help="write quarterly retro")
     retro.add_argument("--quarter", required=True)
@@ -42,12 +57,13 @@ def main(argv: list[str] | None = None) -> int:
         return 0
 
     if args.command == "validate":
-        errors = validate_schema(args.patterns_dir) + validate_outcomes(args.patterns_dir)
+        patterns_dir = args.patterns_dir or _default_patterns_dir()
+        errors = validate_schema(patterns_dir) + validate_outcomes(patterns_dir)
         if errors:
             for error in errors:
                 print(error.render())
             return 1
-        print(f"OK {args.patterns_dir}")
+        print(f"OK {patterns_dir}")
         return 0
 
     if args.command == "retro":
