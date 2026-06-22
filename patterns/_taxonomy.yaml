@@ -1,0 +1,7 @@
+# Canonical pattern IDs. Human taxonomists curate this list.
+pattern_ids:
+  - eval-as-gate
+  - typed-artifact-discipline
+  - citation-faithful-extraction
+  - dec-then-implement
+  - voice-lint-as-spec-check
