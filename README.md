@@ -32,10 +32,8 @@ This repo is the mining pass that fixes that.
 
 ## Status
 
-v0 scaffold. No implementation yet. Specs in `specs/0001-foundation/`
-name the pattern schema, the DEC-mining algorithm, and the first
-quarterly retro. PR 0002 lands the mining script against one repo
-(`procurement-negotiation-lab`) and the schema.
+
+v0.1 shipped — runnable, minimal. The first real deliverable is in place; the next passes deepen it (more scenarios, real-data backfill). The entry command `python -m pattern_index validate` runs. See `specs/0002-design/` for the v0.1 scope and `STATUS.md` (where present) for the current state and next-feature queue.
 
 ## How to run
 
