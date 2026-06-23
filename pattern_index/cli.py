@@ -7,6 +7,7 @@ from pathlib import Path
 
 from pattern_index.mine import mine_repo
 from pattern_index.retro import write_retro
+from pattern_index.show import render as render_show
 from pattern_index.validators import validate_outcomes, validate_schema
 
 
@@ -42,6 +43,17 @@ def build_parser() -> argparse.ArgumentParser:
     retro.add_argument("--out", required=True, type=Path)
     retro.add_argument("--patterns-dir", type=Path)
 
+    show = subparsers.add_parser(
+        "show", help="print a ranked summary of the committed patterns corpus"
+    )
+    show.add_argument(
+        "patterns_dir",
+        type=Path,
+        nargs="?",
+        default=None,
+        help="Patterns dir to summarize. Defaults to the bundled patterns/ corpus.",
+    )
+
     return parser
 
 
@@ -69,6 +81,10 @@ def main(argv: list[str] | None = None) -> int:
     if args.command == "retro":
         out_path = write_retro(args.quarter, args.out, args.patterns_dir)
         print(f"WROTE {out_path}")
+        return 0
+
+    if args.command == "show":
+        print(render_show(args.patterns_dir), end="")
         return 0
 
     return 1

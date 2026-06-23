@@ -37,16 +37,45 @@ v0.1 shipped — runnable, minimal. The first real deliverable is in place; the 
 
 ## How to run
 
-Placeholder. Will land in spec 0002. The intended invocation:
+All four verbs run today against the committed `patterns/` corpus.
 
 ```bash
+# ranked, readable summary of the committed corpus (read-only, no args)
+python -m pattern_index show
+
+# validate the corpus schema + 90-day outcome rules
+python -m pattern_index validate
+
+# mine a sibling repo's decisions/ for cross-domain candidates
 python -m pattern_index mine \
   --repo ../procurement-negotiation-lab \
   --out patterns/
+
+# write a quarterly retro
 python -m pattern_index retro \
   --quarter 2026-Q3 \
   --out patterns/2026-Q3-retro.md
 ```
+
+`show` prints which patterns reach the most repos and which ones actually
+held on their 90-day outcome review.
+
+## live demo
+
+A streamlit card browser over the same committed corpus: a ranked pattern
+table plus a per-application card (source repo, decision, target domain,
+90-day outcome, narrative).
+
+```bash
+pip install -r requirements.txt
+streamlit run streamlit_app.py
+```
+
+Deploy on Streamlit Community Cloud from repo `AthenaTheOwl/pattern-index`,
+branch `main`, main file `streamlit_app.py`.
+
+<!-- live-url: -->
+
 
 ## Layout
 
@@ -65,7 +94,8 @@ pattern-index/
   docs/
     first-pr.md
   patterns/              # mined entries land here
-  src/                   # arrives in PR 0002
+  src/pattern_index/     # mine / retro / validate / show
+  streamlit_app.py       # interactive card browser
 ```
 
 ## What gets mined
