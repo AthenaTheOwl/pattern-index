@@ -14,11 +14,16 @@ def build_retro(quarter: str, patterns_dir: str | Path) -> str:
     applications = []
     for path in iter_application_files(root):
         metadata, _body = read_markdown(path)
+        # A record with no pattern_id has not been assigned a taxonomy slot yet;
+        # it cannot be counted, so keep the report factual by skipping it rather
+        # than crashing on the missing key.
+        if not str(metadata.get("pattern_id", "")):
+            continue
         applications.append((path, metadata))
 
-    by_pattern = Counter(str(metadata["pattern_id"]) for _path, metadata in applications)
-    by_outcome = Counter(str(metadata["outcome"]) for _path, metadata in applications)
-    source_repos = sorted({str(metadata["source_repo"]) for _path, metadata in applications})
+    by_pattern = Counter(str(metadata.get("pattern_id", "")) for _path, metadata in applications)
+    by_outcome = Counter(str(metadata.get("outcome", "")) for _path, metadata in applications)
+    source_repos = sorted({str(metadata.get("source_repo", "")) for _path, metadata in applications})
 
     lines = [
         f"# Pattern Index Retro - {quarter}",
