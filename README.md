@@ -1,7 +1,7 @@
 # pattern-index
 
-Ten pattern applications across six repos, and four of them are old enough to grade.
-Two transferred and held. The other two are a write-up and a dead end. pattern-index
+Thirteen pattern applications across nine repos, and five of them are old enough to grade.
+Three transferred and held across two patterns. The other closed reviews are a write-up and a dead end. pattern-index
 mines the `decisions/` ledgers for those transfers and then waits ninety days to find
 out which ones survived contact.
 
@@ -33,12 +33,12 @@ python -m pattern_index show
 
 ```
 cross-domain pattern index
-10 applications  -  5 patterns  -  6 source repos  -  4 closed reviews
+13 applications  -  5 patterns  -  9 source repos  -  5 closed reviews
 
 pattern                      apps repos worked  outcomes
 --------------------------------------------------------
-eval-as-gate                    2     2      1  worked 1, still-open 1
-typed-artifact-discipline       2     2      1  worked 1, still-open 1
+typed-artifact-discipline       4     4      1  worked 1, still-open 3
+eval-as-gate                    3     3      2  worked 2, still-open 1
 citation-faithful-extraction    2     2      0  still-open 1, did-not-work 1
 dec-then-implement              2     2      0  still-open 1, abandoned 1
 voice-lint-as-spec-check        2     2      0  still-open 2
@@ -78,7 +78,7 @@ The corpus is mined out of the sibling ledgers and fed back to the control plane
 
 ## Run it in full
 
-All four verbs run against the committed `patterns/` corpus.
+All five verbs run against the committed `patterns/` corpus.
 
 ```bash
 # ranked, readable summary of the committed corpus (read-only, no args)
@@ -96,6 +96,9 @@ python -m pattern_index mine \
 python -m pattern_index retro \
   --quarter 2026-Q3 \
   --out patterns/2026-Q3-retro.md
+
+# list still-open applications due for 90-day outcome review
+python -m pattern_index worklist --as-of 2026-07-05 --horizon-days 30
 ```
 
 A pattern application is, concretely, a DEC record in some repo's `decisions/`
@@ -120,7 +123,7 @@ pattern-index/
   docs/
     first-pr.md
   patterns/              # mined entries land here
-  src/pattern_index/     # mine / retro / validate / show
+  src/pattern_index/     # mine / retro / validate / show / worklist
   streamlit_app.py       # interactive card browser
 ```
 

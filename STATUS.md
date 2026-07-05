@@ -2,8 +2,8 @@
 
 ## Current state
 
-- v0.1 ships a typed pattern application corpus under `patterns/`.
-- The Python CLI can mine DEC frontmatter, validate the corpus, and write a quarterly retro.
+- v0.1 ships a typed pattern application corpus under `patterns/` (13 applications across 9 repos).
+- The Python CLI can mine DEC frontmatter, validate the corpus, write a quarterly retro, and list 90-day outcome reviews.
 - The checked-in report artifact is `patterns/2026-Q2-retro.md`.
 - Contract gates are available through `python -m pytest` and the three scripts in `scripts/`.
 
@@ -16,8 +16,7 @@
 
 ## Next feature queue
 
-- Mine the next three portfolio repos and promote new candidates by hand.
-- Add a worklist command for entries that cross the 90-day outcome boundary.
+- Mine another tranche after the July outcome reviews close.
 - Add fixture coverage for DEC records with missing frontmatter.
 - Add a compact retro diff that compares the current quarter to the prior quarter.
 
