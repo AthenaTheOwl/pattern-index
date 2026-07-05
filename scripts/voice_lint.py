@@ -9,7 +9,7 @@ SRC = ROOT / "src"
 if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
-from pattern_index.validators import lint_voice
+from pattern_index.validators import lint_voice  # noqa: E402
 
 
 def main(argv: list[str] | None = None) -> int:

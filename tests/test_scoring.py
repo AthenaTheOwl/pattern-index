@@ -7,20 +7,20 @@ from pattern_index.scoring import score_applications, score_patterns
 def test_score_patterns_locks_checked_in_corpus() -> None:
     scorecard = score_patterns(Path("patterns"))
 
-    assert scorecard.applications_reviewed == 10
-    assert scorecard.source_repos_represented == 6
+    assert scorecard.applications_reviewed == 13
+    assert scorecard.source_repos_represented == 9
     assert scorecard.pattern_counts == {
         "citation-faithful-extraction": 2,
         "dec-then-implement": 2,
-        "eval-as-gate": 2,
-        "typed-artifact-discipline": 2,
+        "eval-as-gate": 3,
+        "typed-artifact-discipline": 4,
         "voice-lint-as-spec-check": 2,
     }
     assert scorecard.outcome_counts == {
         "abandoned": 1,
         "did-not-work": 1,
-        "still-open": 6,
-        "worked": 2,
+        "still-open": 8,
+        "worked": 3,
     }
 
 
