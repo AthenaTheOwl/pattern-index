@@ -7,7 +7,7 @@ def test_render_summarizes_checked_in_corpus() -> None:
     output = render(Path("patterns"))
 
     assert "cross-domain pattern index" in output
-    assert "13 applications" in output
+    assert "15 applications" in output
     assert "5 patterns" in output
     assert "9 source repos" in output
     # the worked transfer patterns must surface in the finding line
@@ -21,13 +21,13 @@ def test_rank_orders_by_applications_then_worked() -> None:
     rows = rank_patterns(apps)
 
     assert [r.pattern_id for r in rows][:2] == [
-        "typed-artifact-discipline",
         "eval-as-gate",
+        "typed-artifact-discipline",
     ]
     # typed-artifact-discipline has the widest source-repo reach after the new mining pass
     top = rows[0]
-    assert top.applications == 4
-    assert top.worked == 1
+    assert top.applications == 5
+    assert top.worked == 2
 
 
 def test_render_handles_empty_corpus(tmp_path: Path) -> None:
