@@ -4,10 +4,10 @@ source_repo: ai-supply-chain-copilot-prd
 dec_ref: DEC-PRD-004
 target_domain: product-prd
 applied_at: 2026-05-29
-outcome: still-open
-outcome_recorded_at: null
+outcome: worked
+outcome_recorded_at: 2026-09-04
 outcome_evidence:
-  - Still open; the static PRD adopted the schema-cache and decision-validator contract and needs 90-day review.
+  - "Worked: on 2026-09-04, 98 days after application, validate_decisions passes over five DEC records and the schema-cache contract is unchanged; the discipline held past the 90-day window."
 ---
 
 ## Narrative

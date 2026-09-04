@@ -4,10 +4,10 @@ source_repo: ai-field-brief
 dec_ref: DEC-009
 target_domain: editorial-quality
 applied_at: 2026-05-16
-outcome: still-open
-outcome_recorded_at: null
+outcome: worked
+outcome_recorded_at: 2026-09-04
 outcome_evidence:
-  - Still open; the lint rule needs another batch of field briefs.
+  - "Worked: the voice gate ran in CI on every push since 2026-05-16, every issue 2026-W22 through W36 shipped lint-clean, and on 2026-09-04 it caught 20 WARN and 1 FAIL on the W35 draft before publish."
 ---
 
 ## Narrative

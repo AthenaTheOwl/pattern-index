@@ -4,10 +4,10 @@ source_repo: ai-field-brief
 dec_ref: DEC-006
 target_domain: field-briefing
 applied_at: 2026-04-12
-outcome: still-open
-outcome_recorded_at: null
+outcome: did-not-work
+outcome_recorded_at: 2026-09-04
 outcome_evidence:
-  - Still open; the brief schema needs more field use before review.
+  - "Did not work as applied: nothing validated the typed brief file, so 172 schema violations accrued across eight issues (2026-W24 to W34) and three issues shipped without required Top-signal fields, until validate_matrix_cells and validate_brief_fields landed 2026-09-04 (DEC-MTRX-009, DEC-PUB-013)."
 ---
 
 ## Narrative
