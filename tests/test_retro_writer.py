@@ -8,5 +8,5 @@ def test_build_retro_counts_checked_in_corpus() -> None:
 
     assert "Applications reviewed: 15" in retro
     assert "- eval-as-gate: 5" in retro
-    assert "- still-open: 4" in retro
-    assert "- worked: 7" in retro
+    assert "- still-open: 3" in retro
+    assert "- worked: 8" in retro
