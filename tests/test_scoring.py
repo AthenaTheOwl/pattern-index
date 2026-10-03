@@ -16,13 +16,14 @@ def test_score_patterns_locks_checked_in_corpus() -> None:
         "typed-artifact-discipline": 4,
         "voice-lint-as-spec-check": 2,
     }
-    # Relocked 2026-10-03: grid-silicon-DEC-GRDS-001 closed still-open -> worked at its
-    # 90-day review (scoped to fixture evidence; see that application's outcome note).
+    # Relocked 2026-10-03: two applications closed still-open -> worked at their 90-day
+    # reviews, grid-silicon-DEC-GRDS-001 (fixture-scoped) and
+    # mcp-security-lab-DEC-MCPSEC-010 (one real-config corpus). See each file's note.
     assert scorecard.outcome_counts == {
         "abandoned": 2,
         "did-not-work": 2,
-        "still-open": 3,
-        "worked": 8,
+        "still-open": 2,
+        "worked": 9,
     }
 
 

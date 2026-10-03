@@ -27,7 +27,9 @@ def test_rank_orders_by_applications_then_worked() -> None:
     # typed-artifact-discipline has the widest source-repo reach after the new mining pass
     top = rows[0]
     assert top.applications == 5
-    assert top.worked == 2
+    # Relocked 2026-10-03: mcp-security-lab-DEC-MCPSEC-010 closed worked at its 90-day
+    # review, taking eval-as-gate's worked count from 2 to 3.
+    assert top.worked == 3
 
 
 def test_render_handles_empty_corpus(tmp_path: Path) -> None:
