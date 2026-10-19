@@ -11,7 +11,7 @@
 
 - The miner reads DEC fields from front matter (leading or under the H1), `**Field:**` and `Field:` lines under the title, and `## Status` / `## Date` sections. It does not read the decision prose, so a record without `domain:` or `references:` is parsed but never mined as cross-domain.
 - Pattern ID assignment remains manual; mined entries start as `UNASSIGNED`.
-- The bundled corpus is a seed data report, not a full portfolio sweep.
+- The bundled corpus is a seed data report, not a full portfolio sweep. Ten of its 15 applications are illustrative seed rows marked `provenance: seed-illustrative`; their DEC ids and dates were not observed in the source repos. `show` reports how much of each count they carry.
 - Outcome checks use calendar days and do not model business-day exceptions.
 
 ## Next feature queue

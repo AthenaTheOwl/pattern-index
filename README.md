@@ -1,7 +1,8 @@
 # pattern-index
 
 Fifteen pattern applications across nine repos, with thirteen closed outcome reviews.
-Nine closed reviews record a transfer that held across four patterns. pattern-index
+Ten of the fifteen are illustrative seed rows from the v0.1 data report, not observed
+applications. Of the five observed ones, three have closed, and all three held. pattern-index
 mines the `decisions/` ledgers for those transfers and then waits ninety days to find
 out which ones survived contact.
 
@@ -42,13 +43,21 @@ typed-artifact-discipline       4     4      3  worked 3, did-not-work 1
 voice-lint-as-spec-check        2     2      2  worked 2
 citation-faithful-extraction    2     2      1  worked 1, did-not-work 1
 dec-then-implement              2     2      0  abandoned 2
+
+finding: of 13 closed reviews, 9/13 transferred and held: citation-faithful-extraction, eval-as-gate, typed-artifact-discipline, voice-lint-as-spec-check. 'eval-as-gate' shows the widest reach (4 repos, 5 applications).
+seed: 10 of 15 applications are illustrative seed rows (provenance: seed-illustrative), not observed applications; they account for 10 closed reviews and 6 worked outcomes in these counts.
 ```
 
 The list is ranked by how many applications each pattern carries, then by how many
 worked; the `repos` column shows reach. The `outcomes` column records the outcome: of
-thirteen closed reviews, nine record a transfer that held. Those are corpus
-observations backed by the evidence lines in each application; they are not
-independent proof of every downstream domain claim.
+thirteen closed reviews, nine record a transfer that held. Six of those nine are
+seed rows. The ten applications marked `provenance: seed-illustrative` were written
+into the v0.1 seed to exercise the workflow: their `dec_ref` ids and `applied_at`
+dates were not observed in the source repos, and some of their outcome dates fall
+before the files were committed. Treat them as worked examples of the format. The
+five unmarked applications are observed ones, and their outcomes are corpus
+observations backed by the evidence lines in each file; they are not independent
+proof of every downstream domain claim.
 
 For a date-filtered outcome view, use
 `python -m pattern_index show --as-of 2026-06-30`. Applications dated later are

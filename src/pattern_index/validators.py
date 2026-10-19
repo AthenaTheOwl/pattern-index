@@ -21,6 +21,8 @@ REQUIRED_FIELDS = {
     "outcome_recorded_at",
     "outcome_evidence",
 }
+SEED_PROVENANCE = "seed-illustrative"
+PROVENANCES = {SEED_PROVENANCE}
 BANNED_WORDS = {"leverage", "synergy", "best-in-class", "seamless"}
 
 
@@ -85,6 +87,10 @@ def validate_schema(patterns_dir: str | Path) -> list[ValidationError]:
         evidence = metadata.get("outcome_evidence")
         if not isinstance(evidence, list) or not evidence:
             errors.append(ValidationError(path, "outcome_evidence must be a list"))
+
+        provenance = metadata.get("provenance")
+        if provenance is not None and str(provenance) not in PROVENANCES:
+            errors.append(ValidationError(path, f"invalid provenance: {provenance}"))
 
     return errors
 

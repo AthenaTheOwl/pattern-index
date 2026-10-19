@@ -14,7 +14,7 @@ from datetime import date
 from pathlib import Path
 
 from pattern_index.frontmatter import read_markdown
-from pattern_index.validators import iter_application_files, parse_date
+from pattern_index.validators import SEED_PROVENANCE, iter_application_files, parse_date
 
 OUTCOME_ORDER = ["worked", "still-open", "did-not-work", "abandoned"]
 
@@ -32,6 +32,11 @@ class Application:
     applied_at: str
     outcome: str
     narrative: str
+    provenance: str = ""
+
+    @property
+    def is_seed(self) -> bool:
+        return self.provenance == SEED_PROVENANCE
 
 
 @dataclass(frozen=True)
@@ -74,6 +79,7 @@ def load_applications(
                 applied_at=str(metadata.get("applied_at", "")),
                 outcome=outcome,
                 narrative=_narrative(body),
+                provenance=str(metadata.get("provenance") or ""),
             )
         )
     return apps
@@ -123,6 +129,20 @@ def headline(apps: list[Application], rows: list[PatternRow]) -> str:
     )
 
 
+def seed_note(apps: list[Application]) -> str | None:
+    """Say how much of the summary rests on illustrative seed rows."""
+    seeds = [a for a in apps if a.is_seed]
+    if not seeds:
+        return None
+    worked = sum(1 for a in seeds if a.outcome == "worked")
+    closed = sum(1 for a in seeds if a.outcome != "still-open")
+    return (
+        f"{len(seeds)} of {len(apps)} applications are illustrative seed rows "
+        f"(provenance: {SEED_PROVENANCE}), not observed applications; they account "
+        f"for {closed} closed reviews and {worked} worked outcomes in these counts."
+    )
+
+
 def render(patterns_dir: str | Path | None = None, as_of: date | None = None) -> str:
     apps = load_applications(patterns_dir, as_of)
     rows = rank_patterns(apps)
@@ -161,6 +181,9 @@ def render(patterns_dir: str | Path | None = None, as_of: date | None = None) ->
 
     lines.append("")
     lines.append(f"finding: {headline(apps, rows)}")
+    note = seed_note(apps)
+    if note:
+        lines.append(f"seed: {note}")
     lines.append("")
     return "\n".join(lines)
 

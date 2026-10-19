@@ -49,6 +49,10 @@
         "minLength": 1
       },
       "minItems": 1
+    },
+    "provenance": {
+      "description": "seed-illustrative marks a row written into the v0.1 seed corpus to exercise the workflow; its dec_ref and dates were not observed in the source repo. Absent means the row records an observed application.",
+      "enum": ["seed-illustrative"]
     }
   }
 }

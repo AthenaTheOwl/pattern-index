@@ -17,6 +17,44 @@ def test_render_summarizes_checked_in_corpus() -> None:
     assert "finding:" in output
 
 
+def test_render_discloses_illustrative_seed_rows() -> None:
+    apps = load_applications(Path("patterns"))
+    seeds = sorted(f"{a.source_repo}-{a.dec_ref}" for a in apps if a.is_seed)
+
+    # The ten rows written by the v0.1 seed data report, and only those.
+    assert seeds == [
+        "ai-field-brief-DEC-006",
+        "ai-field-brief-DEC-009",
+        "ai-field-brief-DEC-011",
+        "chip-supply-chain-map-DEC-004",
+        "pattern-index-DEC-PIX-001",
+        "procurement-negotiation-lab-DEC-021",
+        "procurement-negotiation-lab-DEC-027",
+        "supplier-risk-rag-agent-DEC-014",
+        "supplier-risk-rag-agent-DEC-017",
+        "trace-to-eval-harness-DEC-008",
+    ]
+    output = render(Path("patterns"))
+    assert (
+        "seed: 10 of 15 applications are illustrative seed rows "
+        "(provenance: seed-illustrative), not observed applications; they account "
+        "for 10 closed reviews and 6 worked outcomes in these counts."
+    ) in output
+
+
+def test_render_has_no_seed_line_without_seed_rows(tmp_path: Path) -> None:
+    folder = tmp_path / "example-pattern" / "applications"
+    folder.mkdir(parents=True)
+    (folder / "observed.md").write_text(
+        "---\npattern_id: example-pattern\nsource_repo: r\ndec_ref: DEC-001\n"
+        "target_domain: testing\napplied_at: 2026-01-01\noutcome: still-open\n"
+        "outcome_recorded_at: null\n---\n\nObserved.\n",
+        encoding="utf-8",
+    )
+
+    assert "seed:" not in render(tmp_path)
+
+
 def test_rank_orders_by_applications_then_worked() -> None:
     apps = load_applications(Path("patterns"))
     rows = rank_patterns(apps)

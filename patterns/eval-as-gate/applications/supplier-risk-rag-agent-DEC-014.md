@@ -8,6 +8,7 @@ outcome: worked
 outcome_recorded_at: 2026-06-03
 outcome_evidence:
   - Worked; CI blocked two retrieval regressions before merge.
+provenance: seed-illustrative
 ---
 
 ## Narrative

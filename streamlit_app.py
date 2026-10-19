@@ -24,6 +24,7 @@ from pattern_index.show import (  # noqa: E402
     headline,
     load_applications,
     rank_patterns,
+    seed_note,
 )
 from pattern_index.validators import (  # noqa: E402
     lint_voice,
@@ -70,6 +71,9 @@ c3.metric("source repos", len(repos))
 c4.metric("worked", f"{worked}/{closed}" if closed else "0")
 
 st.info(headline(apps, rows))
+note = seed_note(apps)
+if note:
+    st.warning(note)
 
 st.subheader("patterns, ranked by reach")
 st.dataframe(
@@ -102,7 +106,9 @@ if not shown:
     st.stop()
 
 labels = {
-    f"{a.pattern_id}  <-  {a.source_repo} {a.dec_ref}": a for a in shown
+    f"{a.pattern_id}  <-  {a.source_repo} {a.dec_ref}"
+    + ("  (illustrative seed)" if a.is_seed else ""): a
+    for a in shown
 }
 choice = st.selectbox("pick an application", list(labels))
 app = labels[choice]
@@ -117,6 +123,8 @@ with right:
     st.markdown(f"**target domain.** {app.target_domain}")
     st.markdown(f"**applied.** {app.applied_at}")
     st.markdown(f"**outcome.** {OUTCOME_BADGE.get(app.outcome, app.outcome)}")
+    if app.is_seed:
+        st.markdown("**provenance.** illustrative seed row, not an observed application")
 
 
 # ---------------------------------------------------------------------------
