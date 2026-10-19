@@ -1,4 +1,5 @@
 from pathlib import Path
+from datetime import date
 
 from pattern_index.show import load_applications, rank_patterns, render
 
@@ -36,3 +37,31 @@ def test_render_handles_empty_corpus(tmp_path: Path) -> None:
     output = render(tmp_path)
 
     assert "no committed applications" in output
+
+
+def test_as_of_excludes_later_applications_and_hides_later_outcomes(tmp_path: Path) -> None:
+    folder = tmp_path / "example-pattern" / "applications"
+    folder.mkdir(parents=True)
+    for name, applied, observed in (
+        ("known-later", "2026-01-01", "2026-04-01"),
+        ("future-application", "2026-07-01", "2026-10-01"),
+        ("undated-outcome", "2026-01-01", "null"),
+    ):
+        (folder / f"{name}.md").write_text(
+            f"---\npattern_id: example-pattern\nsource_repo: {name}\ndec_ref: DEC-001\n"
+            f"target_domain: testing\napplied_at: {applied}\noutcome: worked\n"
+            f"outcome_recorded_at: {observed}\n---\n\nAn illustrative application.\n", encoding="utf-8")
+    march = load_applications(tmp_path, date(2026, 3, 1))
+    assert len(march) == 2 and all(a.outcome == "still-open" for a in march)
+    april = load_applications(tmp_path, date(2026, 4, 1))
+    assert sum(a.outcome == "worked" for a in april) == 1
+    assert len(load_applications(tmp_path)) == 3
+    output = render(tmp_path, date(2026, 3, 1))
+    assert "as_of: 2026-03-01" in output and "0 closed reviews" in output
+
+
+def test_show_cli_accepts_as_of(capsys) -> None:
+    from pattern_index.cli import main
+
+    assert main(["show", "patterns", "--as-of", "2026-03-01"]) == 0
+    assert "as_of: 2026-03-01" in capsys.readouterr().out
