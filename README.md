@@ -32,9 +32,7 @@ date, appears as `still-open`. Default `show` keeps its current-corpus behavior.
 
 This prevents later outcome observations from entering an earlier summary. It
 filters the current files; it cannot recover deleted applications or prior edits.
-Use a retained Git revision for an actual historical corpus snapshot. This is a
-small implementation of the preserve-history and applicability distinction in
-[AI Product Team's change workflow](https://github.com/3orionkings/ai-product-team/blob/main/workflows/process-change.md).
+Use a retained Git revision for an actual historical corpus snapshot.
 
 One command, no setup. It reads the committed corpus and ranks it:
 
