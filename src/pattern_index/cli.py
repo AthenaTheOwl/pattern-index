@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import re
 from datetime import date
 from pathlib import Path
 
@@ -20,6 +21,20 @@ def _default_patterns_dir() -> Path:
     against the committed corpus.
     """
     return Path(__file__).resolve().parents[2] / "patterns"
+
+
+def _iso_date(value: str) -> date:
+    """argparse type for --as-of: a calendar date written exactly YYYY-MM-DD.
+
+    date.fromisoformat alone also accepts forms such as 20260630 and
+    2026-W26, which the help text does not promise.
+    """
+    if re.fullmatch(r"[0-9]{4}-[0-9]{2}-[0-9]{2}", value):
+        try:
+            return date.fromisoformat(value)
+        except ValueError:
+            pass
+    raise argparse.ArgumentTypeError(f"expected a YYYY-MM-DD date, got {value!r}")
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -55,7 +70,11 @@ def build_parser() -> argparse.ArgumentParser:
         default=None,
         help="Patterns dir to summarize. Defaults to the bundled patterns/ corpus.",
     )
-    show.add_argument("--as-of", help="Exclude later applications and outcome observations (YYYY-MM-DD).")
+    show.add_argument(
+        "--as-of",
+        type=_iso_date,
+        help="Exclude later applications and outcome observations (YYYY-MM-DD).",
+    )
 
     worklist = subparsers.add_parser(
         "worklist", help="list still-open applications due for 90-day review"
@@ -67,7 +86,9 @@ def build_parser() -> argparse.ArgumentParser:
         default=None,
         help="Patterns dir to inspect. Defaults to the bundled patterns/ corpus.",
     )
-    worklist.add_argument("--as-of", help="Review date as YYYY-MM-DD. Defaults to today.")
+    worklist.add_argument(
+        "--as-of", type=_iso_date, help="Review date as YYYY-MM-DD. Defaults to today."
+    )
     worklist.add_argument(
         "--horizon-days",
         type=int,
@@ -107,16 +128,14 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.command == "show":
         try:
-            as_of = date.fromisoformat(args.as_of) if args.as_of else None
-            print(render_show(args.patterns_dir, as_of), end="")
+            print(render_show(args.patterns_dir, args.as_of), end="")
         except ValueError as err:
             parser.error(str(err))
         return 0
 
     if args.command == "worklist":
         patterns_dir = args.patterns_dir or _default_patterns_dir()
-        as_of = date.fromisoformat(args.as_of) if args.as_of else None
-        print(render_worklist(patterns_dir, as_of, args.horizon_days), end="")
+        print(render_worklist(patterns_dir, args.as_of, args.horizon_days), end="")
         return 0
 
     return 1

@@ -92,3 +92,18 @@ def test_show_cli_reports_bad_as_of_as_usage_error(capsys) -> None:
     assert result.returncode == 2
     assert "not-a-date" in result.stderr
     assert "Traceback" not in result.stderr
+
+
+def test_show_cli_as_of_requires_yyyy_mm_dd(capsys) -> None:
+    import pytest
+
+    from pattern_index.cli import main
+
+    # date.fromisoformat on 3.11+ also takes basic and ISO-week forms; the flag
+    # promises YYYY-MM-DD only, so those are usage errors rather than silent reads.
+    for value in ("2026-W26", "20260630", "2026-6-30", "2026-02-30"):
+        with pytest.raises(SystemExit) as exc:
+            main(["show", "patterns", "--as-of", value])
+        assert exc.value.code == 2
+        err = capsys.readouterr().err
+        assert "pattern-index show" in err and "--as-of" in err and value in err
