@@ -80,8 +80,8 @@ def test_show_cli_reports_bad_as_of_as_usage_error(capsys) -> None:
     assert exc.value.code == 2
     assert "not-a-date" in capsys.readouterr().err
 
-    # `python -m pattern_index` from the repo root resolves the root
-    # pattern_index/cli.py copy, which the in-process call above does not reach.
+    # `python -m pattern_index` from the repo root enters through the root
+    # pattern_index/ shim, which the in-process call above does not reach.
     root = Path(__file__).resolve().parents[1]
     result = subprocess.run(
         [sys.executable, "-m", "pattern_index", "show", "--as-of", "not-a-date"],
