@@ -25,15 +25,6 @@ The artifact is `patterns/<pattern_id>/applications/<case>.md` plus one quarterl
 
 ## Try it
 
-For a date-filtered outcome view, use
-`python -m pattern_index show --as-of 2026-06-30`. Applications dated later are
-excluded; a closed outcome recorded after the cutoff, or without an observation
-date, appears as `still-open`. Default `show` keeps its current-corpus behavior.
-
-This prevents later outcome observations from entering an earlier summary. It
-filters the current files; it cannot recover deleted applications or prior edits.
-Use a retained Git revision for an actual historical corpus snapshot.
-
 One command, no setup. It reads the committed corpus and ranks it:
 
 ```bash
@@ -53,10 +44,20 @@ citation-faithful-extraction    2     2      1  worked 1, did-not-work 1
 dec-then-implement              2     2      0  abandoned 2
 ```
 
-The top of the list is reach — which patterns touch the most repos. The `outcomes`
-column records the outcome: of thirteen closed reviews, nine record a transfer
-that held. Those are corpus observations with evidence and scope limits in each
-application; they are not independent proof of every downstream domain claim.
+The list is ranked by how many applications each pattern carries, then by how many
+worked; the `repos` column shows reach. The `outcomes` column records the outcome: of
+thirteen closed reviews, nine record a transfer that held. Those are corpus
+observations backed by the evidence lines in each application; they are not
+independent proof of every downstream domain claim.
+
+For a date-filtered outcome view, use
+`python -m pattern_index show --as-of 2026-06-30`. Applications dated later are
+excluded; a closed outcome recorded after the cutoff, or without an observation
+date, appears as `still-open`. Default `show` keeps its current-corpus behavior.
+
+This prevents later outcome observations from entering an earlier summary. It
+filters the current files; it cannot recover deleted applications or prior edits.
+Use a retained Git revision for an actual historical corpus snapshot.
 
 ## live demo
 
