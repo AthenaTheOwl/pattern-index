@@ -107,3 +107,37 @@ def test_show_cli_as_of_requires_yyyy_mm_dd(capsys) -> None:
         assert exc.value.code == 2
         err = capsys.readouterr().err
         assert "pattern-index show" in err and "--as-of" in err and value in err
+
+
+def test_show_cli_reports_corpus_data_error_without_usage(tmp_path: Path, capsys) -> None:
+    from pattern_index.cli import main
+
+    folder = tmp_path / "example-pattern" / "applications"
+    folder.mkdir(parents=True)
+    bad = folder / "undated.md"
+    bad.write_text(
+        "---\npattern_id: example-pattern\nsource_repo: r\ndec_ref: DEC-001\n"
+        "target_domain: testing\noutcome: worked\n---\n\nNo applied_at.\n",
+        encoding="utf-8",
+    )
+
+    assert main(["show", str(tmp_path), "--as-of", "2026-03-01"]) == 1
+    err = capsys.readouterr().err
+    assert "usage:" not in err
+    assert str(bad) in err and "applied_at" in err
+
+
+def test_show_cli_does_not_turn_unreadable_file_into_usage_error(tmp_path: Path) -> None:
+    import pytest
+
+    from pattern_index.cli import main
+
+    folder = tmp_path / "example-pattern" / "applications"
+    folder.mkdir(parents=True)
+    (folder / "latin1.md").write_bytes(
+        b"---\npattern_id: example-pattern\napplied_at: 2026-01-01\n---\n\ncaf\xe9\n"
+    )
+
+    # Plain `show` keeps its pre-as-of behavior: the decode error propagates.
+    with pytest.raises(UnicodeDecodeError):
+        main(["show", str(tmp_path)])

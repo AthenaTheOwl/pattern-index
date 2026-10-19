@@ -19,6 +19,10 @@ from pattern_index.validators import iter_application_files, parse_date
 OUTCOME_ORDER = ["worked", "still-open", "did-not-work", "abandoned"]
 
 
+class CorpusDataError(ValueError):
+    """An application file cannot support the requested view."""
+
+
 @dataclass(frozen=True)
 class Application:
     pattern_id: str
@@ -55,7 +59,7 @@ def load_applications(
         if as_of is not None:
             applied = parse_date(metadata.get("applied_at"))
             if applied is None:
-                raise ValueError(f"{path}: applied_at must be YYYY-MM-DD for an as-of view")
+                raise CorpusDataError(f"{path}: applied_at must be YYYY-MM-DD for an as-of view")
             if applied > as_of:
                 continue
             recorded = parse_date(metadata.get("outcome_recorded_at"))

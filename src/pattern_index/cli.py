@@ -4,11 +4,13 @@ from __future__ import annotations
 
 import argparse
 import re
+import sys
 from datetime import date
 from pathlib import Path
 
 from pattern_index.mine import mine_repo
 from pattern_index.retro import write_retro
+from pattern_index.show import CorpusDataError
 from pattern_index.show import render as render_show
 from pattern_index.validators import validate_outcomes, validate_schema
 from pattern_index.worklist import render_worklist
@@ -128,9 +130,12 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.command == "show":
         try:
-            print(render_show(args.patterns_dir, args.as_of), end="")
-        except ValueError as err:
-            parser.error(str(err))
+            output = render_show(args.patterns_dir, args.as_of)
+        except CorpusDataError as err:
+            # A data problem in the corpus, not a usage mistake: no usage line, exit 1.
+            print(f"pattern-index show: error: {err}", file=sys.stderr)
+            return 1
+        print(output, end="")
         return 0
 
     if args.command == "worklist":
