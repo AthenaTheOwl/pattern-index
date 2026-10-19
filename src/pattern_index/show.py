@@ -128,6 +128,8 @@ def render(patterns_dir: str | Path | None = None, as_of: date | None = None) ->
     rows = rank_patterns(apps)
 
     if not apps:
+        if as_of is not None:
+            return f"pattern index: no applications dated on or before {as_of.isoformat()}.\n"
         return "pattern index: no committed applications found.\n"
 
     repos = sorted({a.source_repo for a in apps})

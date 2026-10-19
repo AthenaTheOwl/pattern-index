@@ -39,6 +39,13 @@ def test_render_handles_empty_corpus(tmp_path: Path) -> None:
     assert "no committed applications" in output
 
 
+def test_render_names_cutoff_when_as_of_precedes_every_application() -> None:
+    # Every committed application is dated 2026-02-12 or later.
+    output = render(Path("patterns"), date(2026, 1, 31))
+
+    assert output == "pattern index: no applications dated on or before 2026-01-31.\n"
+
+
 def test_as_of_excludes_later_applications_and_hides_later_outcomes(tmp_path: Path) -> None:
     folder = tmp_path / "example-pattern" / "applications"
     folder.mkdir(parents=True)
