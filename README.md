@@ -1,7 +1,7 @@
 # pattern-index
 
-Thirteen pattern applications across nine repos, and five of them are old enough to grade.
-Three transferred and held across two patterns. The other closed reviews are a write-up and a dead end. pattern-index
+Fifteen pattern applications across nine repos, with thirteen closed outcome reviews.
+Nine closed reviews record a transfer that held across four patterns. pattern-index
 mines the `decisions/` ledgers for those transfers and then waits ninety days to find
 out which ones survived contact.
 
@@ -25,6 +25,17 @@ The artifact is `patterns/<pattern_id>/applications/<case>.md` plus one quarterl
 
 ## Try it
 
+For a date-filtered outcome view, use
+`python -m pattern_index show --as-of 2026-06-30`. Applications dated later are
+excluded; a closed outcome recorded after the cutoff, or without an observation
+date, appears as `still-open`. Default `show` keeps its current-corpus behavior.
+
+This prevents later outcome observations from entering an earlier summary. It
+filters the current files; it cannot recover deleted applications or prior edits.
+Use a retained Git revision for an actual historical corpus snapshot. This is a
+small implementation of the preserve-history and applicability distinction in
+[AI Product Team's change workflow](https://github.com/3orionkings/ai-product-team/blob/main/workflows/process-change.md).
+
 One command, no setup. It reads the committed corpus and ranks it:
 
 ```bash
@@ -33,20 +44,21 @@ python -m pattern_index show
 
 ```
 cross-domain pattern index
-13 applications  -  5 patterns  -  9 source repos  -  5 closed reviews
+15 applications  -  5 patterns  -  9 source repos  -  13 closed reviews
 
 pattern                      apps repos worked  outcomes
 --------------------------------------------------------
-typed-artifact-discipline       4     4      1  worked 1, still-open 3
-eval-as-gate                    3     3      2  worked 2, still-open 1
-citation-faithful-extraction    2     2      0  still-open 1, did-not-work 1
-dec-then-implement              2     2      0  still-open 1, abandoned 1
-voice-lint-as-spec-check        2     2      0  still-open 2
+eval-as-gate                    5     4      3  worked 3, still-open 2
+typed-artifact-discipline       4     4      3  worked 3, did-not-work 1
+voice-lint-as-spec-check        2     2      2  worked 2
+citation-faithful-extraction    2     2      1  worked 1, did-not-work 1
+dec-then-implement              2     2      0  abandoned 2
 ```
 
 The top of the list is reach — which patterns touch the most repos. The `outcomes`
-column is the part that costs something: of four reviews closed so far, two transferred
-and held. The rest are still open, didn't work, or got abandoned.
+column records the outcome: of thirteen closed reviews, nine record a transfer
+that held. Those are corpus observations with evidence and scope limits in each
+application; they are not independent proof of every downstream domain claim.
 
 ## live demo
 

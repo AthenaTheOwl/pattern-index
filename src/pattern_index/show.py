@@ -10,10 +10,11 @@ from __future__ import annotations
 
 from collections import Counter
 from dataclasses import dataclass
+from datetime import date
 from pathlib import Path
 
 from pattern_index.frontmatter import read_markdown
-from pattern_index.validators import iter_application_files
+from pattern_index.validators import iter_application_files, parse_date
 
 OUTCOME_ORDER = ["worked", "still-open", "did-not-work", "abandoned"]
 
@@ -43,11 +44,23 @@ def default_patterns_dir() -> Path:
     return Path(__file__).resolve().parents[2] / "patterns"
 
 
-def load_applications(patterns_dir: str | Path | None = None) -> list[Application]:
+def load_applications(
+    patterns_dir: str | Path | None = None, as_of: date | None = None
+) -> list[Application]:
     root = Path(patterns_dir) if patterns_dir is not None else default_patterns_dir()
     apps: list[Application] = []
     for path in iter_application_files(root):
         metadata, body = read_markdown(path)
+        outcome = str(metadata.get("outcome", ""))
+        if as_of is not None:
+            applied = parse_date(metadata.get("applied_at"))
+            if applied is None:
+                raise ValueError(f"{path}: applied_at must be YYYY-MM-DD for an as-of view")
+            if applied > as_of:
+                continue
+            recorded = parse_date(metadata.get("outcome_recorded_at"))
+            if outcome != "still-open" and (recorded is None or recorded > as_of):
+                outcome = "still-open"
         apps.append(
             Application(
                 pattern_id=str(metadata.get("pattern_id", "")),
@@ -55,7 +68,7 @@ def load_applications(patterns_dir: str | Path | None = None) -> list[Applicatio
                 dec_ref=str(metadata.get("dec_ref", "")),
                 target_domain=str(metadata.get("target_domain", "")),
                 applied_at=str(metadata.get("applied_at", "")),
-                outcome=str(metadata.get("outcome", "")),
+                outcome=outcome,
                 narrative=_narrative(body),
             )
         )
@@ -106,8 +119,8 @@ def headline(apps: list[Application], rows: list[PatternRow]) -> str:
     )
 
 
-def render(patterns_dir: str | Path | None = None) -> str:
-    apps = load_applications(patterns_dir)
+def render(patterns_dir: str | Path | None = None, as_of: date | None = None) -> str:
+    apps = load_applications(patterns_dir, as_of)
     rows = rank_patterns(apps)
 
     if not apps:
@@ -118,6 +131,8 @@ def render(patterns_dir: str | Path | None = None) -> str:
 
     lines: list[str] = []
     lines.append("cross-domain pattern index")
+    if as_of is not None:
+        lines.append(f"as_of: {as_of.isoformat()} (date-filtered current corpus)")
     lines.append(
         f"{len(apps)} applications  -  {len(rows)} patterns  -  "
         f"{len(repos)} source repos  -  {closed} closed reviews"

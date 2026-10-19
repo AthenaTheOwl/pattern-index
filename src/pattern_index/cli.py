@@ -55,6 +55,7 @@ def build_parser() -> argparse.ArgumentParser:
         default=None,
         help="Patterns dir to summarize. Defaults to the bundled patterns/ corpus.",
     )
+    show.add_argument("--as-of", help="Exclude later applications and outcome observations (YYYY-MM-DD).")
 
     worklist = subparsers.add_parser(
         "worklist", help="list still-open applications due for 90-day review"
@@ -104,7 +105,11 @@ def main(argv: list[str] | None = None) -> int:
         return 0
 
     if args.command == "show":
-        print(render_show(args.patterns_dir), end="")
+        try:
+            as_of = date.fromisoformat(args.as_of) if args.as_of else None
+            print(render_show(args.patterns_dir, as_of), end="")
+        except ValueError as err:
+            parser.error(str(err))
         return 0
 
     if args.command == "worklist":
