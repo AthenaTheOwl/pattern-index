@@ -104,7 +104,9 @@ All five verbs run against the committed `patterns/` corpus.
 # ranked, readable summary of the committed corpus (read-only, no args)
 python -m pattern_index show
 
-# validate the corpus schema + 90-day outcome rules
+# validate the corpus schema + 90-day outcome rules, and flag dates that precede
+# the record's first commit or the source repo's first commit (checked from git
+# history when it is available; seed rows get a warning)
 python -m pattern_index validate
 
 # mine a sibling repo's decisions/ for cross-domain candidates

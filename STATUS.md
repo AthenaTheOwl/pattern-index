@@ -13,6 +13,7 @@
 - Pattern ID assignment remains manual; mined entries start as `UNASSIGNED`.
 - The bundled corpus is a seed data report, not a full portfolio sweep. Ten of its 15 applications are illustrative seed rows marked `provenance: seed-illustrative`; their DEC ids and dates were not observed in the source repos. `show` reports how much of each count they carry.
 - Outcome checks use calendar days and do not model business-day exceptions.
+- Date-provenance checks (an outcome recorded before its application file was first committed, an application dated before its source repo's first commit) need full git history and sibling checkouts; they stand down in shallow clones such as CI's default checkout.
 
 ## Next feature queue
 

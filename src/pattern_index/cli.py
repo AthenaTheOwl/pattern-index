@@ -12,7 +12,11 @@ from pattern_index.mine import mine_repo
 from pattern_index.retro import write_retro
 from pattern_index.show import CorpusDataError
 from pattern_index.show import render as render_show
-from pattern_index.validators import validate_outcomes, validate_schema
+from pattern_index.validators import (
+    validate_outcomes,
+    validate_record_dates,
+    validate_schema,
+)
 from pattern_index.worklist import render_worklist
 
 
@@ -55,6 +59,13 @@ def build_parser() -> argparse.ArgumentParser:
         nargs="?",
         default=None,
         help="Patterns dir to validate. Defaults to the bundled patterns/ corpus.",
+    )
+    validate.add_argument(
+        "--repos-root",
+        type=Path,
+        default=None,
+        help="Directory holding source repo checkouts, for the applied_at date check. "
+        "Defaults to the parent of the repo that holds the patterns dir.",
     )
 
     retro = subparsers.add_parser("retro", help="write quarterly retro")
@@ -115,7 +126,11 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.command == "validate":
         patterns_dir = args.patterns_dir or _default_patterns_dir()
-        errors = validate_schema(patterns_dir) + validate_outcomes(patterns_dir)
+        repos_root = args.repos_root or Path(patterns_dir).resolve().parent.parent
+        date_errors, seed_warnings = validate_record_dates(patterns_dir, repos_root)
+        for warning in seed_warnings:
+            print(f"WARN (seed-illustrative) {warning.render()}")
+        errors = validate_schema(patterns_dir) + validate_outcomes(patterns_dir) + date_errors
         if errors:
             for error in errors:
                 print(error.render())
