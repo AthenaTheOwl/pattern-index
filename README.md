@@ -115,7 +115,8 @@ python -m pattern_index worklist --as-of 2026-07-05 --horizon-days 30
 A pattern application is, concretely, a DEC record in some repo's `decisions/`
 directory that either names a principle from a different domain than its host repo, or
 cites a prior DEC record from another repo as its origin. Both shapes are detectable
-from the frontmatter.
+from the record's fields: front matter, or the `**Field:**` / `Field:` lines under its
+title.
 
 ## Layout
 

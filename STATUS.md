@@ -9,7 +9,7 @@
 
 ## Known limits
 
-- The miner only reads static DEC frontmatter and does not inspect DEC body text.
+- The miner reads DEC fields from front matter (leading or under the H1), `**Field:**` and `Field:` lines under the title, and `## Status` / `## Date` sections. It does not read the decision prose, so a record without `domain:` or `references:` is parsed but never mined as cross-domain.
 - Pattern ID assignment remains manual; mined entries start as `UNASSIGNED`.
 - The bundled corpus is a seed data report, not a full portfolio sweep.
 - Outcome checks use calendar days and do not model business-day exceptions.
@@ -17,7 +17,6 @@
 ## Next feature queue
 
 - Mine another tranche after the July outcome reviews close.
-- Add fixture coverage for DEC records with missing frontmatter.
 - Add a compact retro diff that compares the current quarter to the prior quarter.
 
 - Resolve factory defect: missing PRODUCT_BRIEF.md,SYSTEM_MAP.md
