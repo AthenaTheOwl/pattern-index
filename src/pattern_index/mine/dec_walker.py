@@ -1,4 +1,4 @@
-"""DEC frontmatter mining for draft pattern applications."""
+"""DEC record field mining for draft pattern applications."""
 
 from __future__ import annotations
 
@@ -59,7 +59,9 @@ def iter_dec_records(repo_path: Path, source_repo: str | None = None) -> Iterabl
     return records
 
 
-DEC_ID_RE = re.compile(r"\bDEC-(?:[A-Za-z]+-)*[0-9]+\b", re.IGNORECASE)
+# Longest DEC-shaped prefix, so a date-style id such as DEC-2026-06-21 is not
+# cut to DEC-2026.
+DEC_ID_RE = re.compile(r"\bDEC-(?:[A-Za-z0-9]+-)*[0-9]+\b", re.IGNORECASE)
 ISO_DATE_RE = re.compile(r"\b[0-9]{4}-[0-9]{2}-[0-9]{2}\b")
 FIELD_KEYS = {
     "id",
@@ -77,6 +79,11 @@ PLAIN_FIELD_RE = re.compile(
     r"^(?:[-*]\s+)?(?P<key>[A-Za-z][A-Za-z _-]*?)\s*:\s*(?P<value>.+)$"
 )
 FIELD_ALIASES = {"decided": "date"}
+# Fields that decide cross-domain mining. A plain `Field: value` line is too
+# easily ordinary prose ("Domain: this covers the whole repo"), so these are
+# read only from front matter or bold `**Field:**` lines.
+STRICT_FIELD_KEYS = {"domain", "references"}
+RECORD_FIELD_KEYS = {"domain", "references", "date", "status", "applied_at", "created_at"}
 
 
 def read_dec_metadata(path: Path) -> tuple[dict[str, Any], str]:
@@ -86,7 +93,8 @@ def read_dec_metadata(path: Path) -> tuple[dict[str, Any], str]:
     front-matter block, a front-matter block under the H1, `**Field:** value`
     or `**Field**: value` lines under the H1, plain `Field: value` lines (bare
     or bulleted), and `## Status` / `## Date` sections. Front matter wins; the
-    other shapes only fill fields it did not set. `domain` is optional: a
+    other shapes only fill fields it did not set. `domain` and `references`
+    are read only from front matter or bold field lines. `domain` is optional: a
     record without one is still a record, and is cross-domain only through
     its references.
     """
@@ -112,11 +120,14 @@ def read_dec_metadata(path: Path) -> tuple[dict[str, Any], str]:
             break
         preamble.append(line)
     for line in preamble:
-        match = BOLD_FIELD_RE.match(line) or PLAIN_FIELD_RE.match(line.strip())
+        bold = BOLD_FIELD_RE.match(line)
+        match = bold or PLAIN_FIELD_RE.match(line.strip())
         if not match:
             continue
         key = re.sub(r"[ -]+", "_", match.group("key").strip().lower())
         key = FIELD_ALIASES.get(key, key)
+        if key in STRICT_FIELD_KEYS and not bold:
+            continue
         value = match.group("value").strip()
         if key in FIELD_KEYS and value and key not in fields:
             fields[key] = value
@@ -160,6 +171,10 @@ def dec_id_for(metadata: dict[str, Any], body: str, path: Path) -> str | None:
         match = DEC_ID_RE.search(source)
         if match:
             return match.group(0).upper()
+    # An ADR-style file (0001-use-x.md) with real record fields is still a
+    # record; a file with neither a DEC id nor fields (a README) is not.
+    if any(metadata.get(key) for key in RECORD_FIELD_KEYS):
+        return path.stem
     return None
 
 
@@ -208,6 +223,9 @@ def is_cross_domain(record: DecRecord, primary_domain: str) -> bool:
 
     for reference in record.references:
         repo_name = reference.split("#", 1)[0].strip()
+        # A bare DEC id names no repo, so it is a same-repo reference.
+        if DEC_ID_RE.fullmatch(repo_name):
+            continue
         if repo_name and slug(repo_name) != record.source_repo:
             return True
 
