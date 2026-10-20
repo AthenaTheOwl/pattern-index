@@ -1,9 +1,11 @@
 # pattern-index
 
 Fifteen pattern applications across nine repos, with thirteen closed outcome reviews.
-Nine closed reviews record a transfer that held across four patterns. pattern-index
-mines the `decisions/` ledgers for those transfers and then waits ninety days to find
-out which ones survived contact.
+Ten of the fifteen are illustrative seed rows from the v0.1 data report, not observed
+applications. Of the five observed ones, three have closed, and all three held. pattern-index
+files those transfers from the `decisions/` ledgers and then waits ninety days to find
+out which ones survived contact. The miner parses today's sibling ledgers but finds no
+candidates in them yet; see below.
 
 ## What it does
 
@@ -17,24 +19,19 @@ directory, finds the ones that borrow a principle from another domain or cite a 
 decision from another repo, and files each as a pattern application. Then it adds the
 field nobody writes upfront: the outcome, ninety days later. A pattern with two
 applications and no closed reviews is a hunch. A pattern that transferred twice and
-held both times is a rule. The mining is static analysis of DEC frontmatter — no model
+held both times is a rule. The mining is static analysis of DEC record fields — no model
 in the loop for that step.
+
+Today that mining finds nothing in the sibling ledgers. The miner parses their records,
+but it marks a record cross-domain only from a `domain:` or `references:` field, and no
+current sibling record carries either one. `mine` on any of them prints
+`No cross-domain DEC candidates found.` The `mine` example below shows the command and
+the record formats it reads; it does not produce candidates from today's ledgers.
 
 The artifact is `patterns/<pattern_id>/applications/<case>.md` plus one quarterly
 `pattern_index_retro.md`. The cadence is quarterly because ninety days is the point.
 
 ## Try it
-
-For a date-filtered outcome view, use
-`python -m pattern_index show --as-of 2026-06-30`. Applications dated later are
-excluded; a closed outcome recorded after the cutoff, or without an observation
-date, appears as `still-open`. Default `show` keeps its current-corpus behavior.
-
-This prevents later outcome observations from entering an earlier summary. It
-filters the current files; it cannot recover deleted applications or prior edits.
-Use a retained Git revision for an actual historical corpus snapshot. This is a
-small implementation of the preserve-history and applicability distinction in
-[AI Product Team's change workflow](https://github.com/3orionkings/ai-product-team/blob/main/workflows/process-change.md).
 
 One command, no setup. It reads the committed corpus and ranks it:
 
@@ -53,12 +50,30 @@ typed-artifact-discipline       4     4      3  worked 3, did-not-work 1
 voice-lint-as-spec-check        2     2      2  worked 2
 citation-faithful-extraction    2     2      1  worked 1, did-not-work 1
 dec-then-implement              2     2      0  abandoned 2
+
+finding: of 13 closed reviews, 9/13 transferred and held: citation-faithful-extraction (seed only), eval-as-gate, typed-artifact-discipline, voice-lint-as-spec-check (seed only). 'eval-as-gate' shows the widest reach (4 repos, 5 applications).
+seed: 10 of 15 applications are illustrative seed rows (provenance: seed-illustrative), not observed applications; they account for 10 closed reviews and 6 worked outcomes in these counts.
 ```
 
-The top of the list is reach — which patterns touch the most repos. The `outcomes`
-column records the outcome: of thirteen closed reviews, nine record a transfer
-that held. Those are corpus observations with evidence and scope limits in each
-application; they are not independent proof of every downstream domain claim.
+The list is ranked by how many applications each pattern carries, then by how many
+worked; the `repos` column shows reach. The `outcomes` column records the outcome: of
+thirteen closed reviews, nine record a transfer that held. Six of those nine are
+seed rows. The ten applications marked `provenance: seed-illustrative` were written
+into the v0.1 seed to exercise the workflow: nine of the ten cite DEC ids that do not
+exist in their source repos, nine have `applied_at` dates before the source repo's
+first commit, and four have outcome dates before the file was committed. Treat them
+as worked examples of the format. The five unmarked applications are observed ones,
+and their outcomes are corpus observations backed by the evidence lines in each file;
+they are not independent proof of every downstream domain claim.
+
+For a date-filtered outcome view, use
+`python -m pattern_index show --as-of 2026-06-30`. Applications dated later are
+excluded; a closed outcome recorded after the cutoff, or without an observation
+date, appears as `still-open`. Default `show` keeps its current-corpus behavior.
+
+This prevents later outcome observations from entering an earlier summary. It
+filters the current files; it cannot recover deleted applications or prior edits.
+Use a retained Git revision for an actual historical corpus snapshot.
 
 ## live demo
 
@@ -96,10 +111,13 @@ All five verbs run against the committed `patterns/` corpus.
 # ranked, readable summary of the committed corpus (read-only, no args)
 python -m pattern_index show
 
-# validate the corpus schema + 90-day outcome rules
+# validate the corpus schema + 90-day outcome rules, and flag dates that precede
+# the record's first commit or the source repo's first commit (checked from git
+# history when it is available; seed rows get a warning)
 python -m pattern_index validate
 
 # mine a sibling repo's decisions/ for cross-domain candidates
+# (today's sibling ledgers give none: no record carries domain: or references:)
 python -m pattern_index mine \
   --repo ../procurement-negotiation-lab \
   --out patterns/
@@ -115,8 +133,10 @@ python -m pattern_index worklist --as-of 2026-07-05 --horizon-days 30
 
 A pattern application is, concretely, a DEC record in some repo's `decisions/`
 directory that either names a principle from a different domain than its host repo, or
-cites a prior DEC record from another repo as its origin. Both shapes are detectable
-from the frontmatter.
+cites a prior DEC record from another repo as its origin. The miner detects both shapes
+from the record's `domain:` and `references:` fields, read from front matter or from
+`**Field:**` lines under its title. Other fields (`id`, `date`, `status`) are also read
+from plain `Field:` lines and `## Status` / `## Date` sections.
 
 ## Layout
 

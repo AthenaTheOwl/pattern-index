@@ -22,11 +22,14 @@ Two pipelines, one shared schema. Quarterly cadence.
 ## Mining algorithm
 
 The miner is deliberately dumb. No LLM. Static analysis of DEC
-markdown frontmatter:
+record fields (front matter, or field lines under the title):
 
 1. Walk `<target_repo>/decisions/*.md`.
-2. Parse YAML frontmatter from each file. Expect at minimum:
-   `id`, `domain`, optional `references`.
+2. Read each record's fields: YAML front matter (leading or under the
+   H1), `**Field:**` lines, plain `Field:` lines, and `## Status` /
+   `## Date` sections. The id comes from `id`, the heading, or the file
+   name; `domain` and `references` are optional and are read only from
+   front matter or `**Field:**` lines.
 3. A DEC is a cross-domain candidate if:
    - `references` contains an entry of shape `<other-repo>#DEC-XXX`,
      OR

@@ -8,6 +8,7 @@ outcome: abandoned
 outcome_recorded_at: 2026-06-18
 outcome_evidence:
   - Abandoned; the map scope changed before implementation reached review.
+provenance: seed-illustrative
 ---
 
 ## Narrative

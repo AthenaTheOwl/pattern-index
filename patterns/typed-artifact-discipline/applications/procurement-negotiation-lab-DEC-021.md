@@ -8,6 +8,7 @@ outcome: worked
 outcome_recorded_at: 2026-06-05
 outcome_evidence:
   - Worked; the typed concession table caught a missing approval field.
+provenance: seed-illustrative
 ---
 
 ## Narrative

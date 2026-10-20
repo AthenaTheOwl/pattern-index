@@ -48,3 +48,23 @@ def test_render_worklist_includes_dec_reference(tmp_path: Path) -> None:
     assert "90-day outcome worklist" in output
     assert "DEC-FIX-001" in output
     assert "eval-as-gate" in output
+
+def test_worklist_cli_reports_bad_as_of_as_usage_error(tmp_path: Path, capsys) -> None:
+    import pytest
+
+    from pattern_index.cli import main
+
+    with pytest.raises(SystemExit) as exc:
+        main(["worklist", str(tmp_path), "--as-of", "nope"])
+    assert exc.value.code == 2
+    err = capsys.readouterr().err
+    assert "pattern-index worklist" in err and "--as-of" in err and "nope" in err
+
+
+def test_worklist_cli_accepts_as_of(tmp_path: Path, capsys) -> None:
+    from pattern_index.cli import main
+
+    write_application(tmp_path, "eval-as-gate", "2026-04-01")
+
+    assert main(["worklist", str(tmp_path), "--as-of", "2026-07-05"]) == 0
+    assert "as_of: 2026-07-05" in capsys.readouterr().out

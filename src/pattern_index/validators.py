@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from datetime import date, timedelta
 from pathlib import Path
 import re
+import subprocess
 from typing import Iterable
 
 from pattern_index.frontmatter import read_markdown
@@ -21,6 +22,8 @@ REQUIRED_FIELDS = {
     "outcome_recorded_at",
     "outcome_evidence",
 }
+SEED_PROVENANCE = "seed-illustrative"
+PROVENANCES = {SEED_PROVENANCE}
 BANNED_WORDS = {"leverage", "synergy", "best-in-class", "seamless"}
 
 
@@ -86,6 +89,10 @@ def validate_schema(patterns_dir: str | Path) -> list[ValidationError]:
         if not isinstance(evidence, list) or not evidence:
             errors.append(ValidationError(path, "outcome_evidence must be a list"))
 
+        provenance = metadata.get("provenance")
+        if provenance is not None and str(provenance) not in PROVENANCES:
+            errors.append(ValidationError(path, f"invalid provenance: {provenance}"))
+
     return errors
 
 
@@ -128,6 +135,94 @@ def validate_outcomes(
                 errors.append(ValidationError(path, "closed outcome needs evidence"))
 
     return errors
+
+
+def validate_record_dates(
+    patterns_dir: str | Path,
+    repos_root: str | Path | None = None,
+) -> tuple[list[ValidationError], list[ValidationError]]:
+    """Flag dates that precede the thing they describe, where git can tell.
+
+    - outcome_recorded_at earlier than the commit that first added the
+      application file: the outcome cannot have been recorded in a file that
+      did not exist yet.
+    - applied_at earlier than the first commit of `repos_root/<source_repo>`:
+      the pattern cannot have been applied in a repo that did not exist yet.
+
+    Each check is skipped when it cannot be made: the corpus or source repo is
+    not a git checkout, the checkout is shallow (CI's default fetch depth makes
+    every file look created at HEAD), the file is not committed yet, or the
+    source repo is not checked out under repos_root.
+
+    Returns (errors, seed_warnings). Rows marked `provenance: seed-illustrative`
+    already say their dates were not observed, so their flags are warnings.
+    """
+    root = Path(patterns_dir).resolve()
+    errors: list[ValidationError] = []
+    warnings: list[ValidationError] = []
+    track_files = _git_history_available(root)
+    repo_starts: dict[str, date | None] = {}
+
+    for path in iter_application_files(root):
+        metadata, _body = read_markdown(path)
+        flags: list[str] = []
+
+        recorded_at = parse_date(metadata.get("outcome_recorded_at"))
+        if track_files and recorded_at is not None:
+            created = _git_date(root, ["log", "--diff-filter=A", "--format=%as", "--", str(path)])
+            if created is not None and recorded_at < created:
+                flags.append(
+                    f"outcome_recorded_at {recorded_at.isoformat()} precedes this "
+                    f"record's first commit ({created.isoformat()})"
+                )
+
+        applied_at = parse_date(metadata.get("applied_at"))
+        source_repo = str(metadata.get("source_repo") or "").strip()
+        if repos_root is not None and applied_at is not None and source_repo:
+            if source_repo not in repo_starts:
+                repo_starts[source_repo] = _repo_first_commit(Path(repos_root) / source_repo)
+            started = repo_starts[source_repo]
+            if started is not None and applied_at < started:
+                flags.append(
+                    f"applied_at {applied_at.isoformat()} precedes {source_repo}'s "
+                    f"first commit ({started.isoformat()})"
+                )
+
+        target = warnings if metadata.get("provenance") == SEED_PROVENANCE else errors
+        target.extend(ValidationError(path, flag) for flag in flags)
+
+    return errors, warnings
+
+
+def _git(cwd: Path, args: list[str]) -> str | None:
+    try:
+        result = subprocess.run(
+            ["git", "-C", str(cwd), *args],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+    except OSError:
+        return None
+    if result.returncode != 0:
+        return None
+    return result.stdout.strip()
+
+
+def _git_history_available(path: Path) -> bool:
+    return _git(path, ["rev-parse", "--is-shallow-repository"]) == "false"
+
+
+def _git_date(cwd: Path, args: list[str]) -> date | None:
+    output = _git(cwd, args)
+    dates = [parsed for line in (output or "").splitlines() if (parsed := parse_date(line))]
+    return min(dates) if dates else None
+
+
+def _repo_first_commit(repo: Path) -> date | None:
+    if not (repo / ".git").exists() or not _git_history_available(repo):
+        return None
+    return _git_date(repo, ["log", "--max-parents=0", "--format=%as", "HEAD"])
 
 
 def lint_voice(paths: Iterable[str | Path]) -> list[ValidationError]:

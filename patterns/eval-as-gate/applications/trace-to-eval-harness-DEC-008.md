@@ -8,6 +8,7 @@ outcome: worked
 outcome_recorded_at: 2026-07-05
 outcome_evidence:
   - Worked; trace-to-eval-harness now carries schema-valid bridge packets and a fresh cross-portfolio packet commit (780ebc6).
+provenance: seed-illustrative
 ---
 
 ## Narrative

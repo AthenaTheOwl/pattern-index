@@ -17,6 +17,55 @@ def test_render_summarizes_checked_in_corpus() -> None:
     assert "finding:" in output
 
 
+def test_finding_marks_patterns_that_held_only_in_seed_rows() -> None:
+    finding = next(
+        line for line in render(Path("patterns")).splitlines() if line.startswith("finding:")
+    )
+
+    assert "citation-faithful-extraction (seed only)" in finding
+    assert "voice-lint-as-spec-check (seed only)" in finding
+    assert "eval-as-gate," in finding
+    assert "typed-artifact-discipline," in finding
+
+
+def test_render_discloses_illustrative_seed_rows() -> None:
+    apps = load_applications(Path("patterns"))
+    seeds = sorted(f"{a.source_repo}-{a.dec_ref}" for a in apps if a.is_seed)
+
+    # The ten rows written by the v0.1 seed data report, and only those.
+    assert seeds == [
+        "ai-field-brief-DEC-006",
+        "ai-field-brief-DEC-009",
+        "ai-field-brief-DEC-011",
+        "chip-supply-chain-map-DEC-004",
+        "pattern-index-DEC-PIX-001",
+        "procurement-negotiation-lab-DEC-021",
+        "procurement-negotiation-lab-DEC-027",
+        "supplier-risk-rag-agent-DEC-014",
+        "supplier-risk-rag-agent-DEC-017",
+        "trace-to-eval-harness-DEC-008",
+    ]
+    output = render(Path("patterns"))
+    assert (
+        "seed: 10 of 15 applications are illustrative seed rows "
+        "(provenance: seed-illustrative), not observed applications; they account "
+        "for 10 closed reviews and 6 worked outcomes in these counts."
+    ) in output
+
+
+def test_render_has_no_seed_line_without_seed_rows(tmp_path: Path) -> None:
+    folder = tmp_path / "example-pattern" / "applications"
+    folder.mkdir(parents=True)
+    (folder / "observed.md").write_text(
+        "---\npattern_id: example-pattern\nsource_repo: r\ndec_ref: DEC-001\n"
+        "target_domain: testing\napplied_at: 2026-01-01\noutcome: still-open\n"
+        "outcome_recorded_at: null\n---\n\nObserved.\n",
+        encoding="utf-8",
+    )
+
+    assert "seed:" not in render(tmp_path)
+
+
 def test_rank_orders_by_applications_then_worked() -> None:
     apps = load_applications(Path("patterns"))
     rows = rank_patterns(apps)
@@ -37,6 +86,13 @@ def test_render_handles_empty_corpus(tmp_path: Path) -> None:
     output = render(tmp_path)
 
     assert "no committed applications" in output
+
+
+def test_render_names_cutoff_when_as_of_precedes_every_application() -> None:
+    # Every committed application is dated 2026-02-12 or later.
+    output = render(Path("patterns"), date(2026, 1, 31))
+
+    assert output == "pattern index: no applications dated on or before 2026-01-31.\n"
 
 
 def test_as_of_excludes_later_applications_and_hides_later_outcomes(tmp_path: Path) -> None:
@@ -65,3 +121,79 @@ def test_show_cli_accepts_as_of(capsys) -> None:
 
     assert main(["show", "patterns", "--as-of", "2026-03-01"]) == 0
     assert "as_of: 2026-03-01" in capsys.readouterr().out
+
+
+def test_show_cli_reports_bad_as_of_as_usage_error(capsys) -> None:
+    import subprocess
+    import sys
+
+    import pytest
+
+    from pattern_index.cli import main
+
+    with pytest.raises(SystemExit) as exc:
+        main(["show", "patterns", "--as-of", "not-a-date"])
+    assert exc.value.code == 2
+    assert "not-a-date" in capsys.readouterr().err
+
+    # `python -m pattern_index` from the repo root enters through the root
+    # pattern_index/ shim, which the in-process call above does not reach.
+    root = Path(__file__).resolve().parents[1]
+    result = subprocess.run(
+        [sys.executable, "-m", "pattern_index", "show", "--as-of", "not-a-date"],
+        cwd=root,
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode == 2
+    assert "not-a-date" in result.stderr
+    assert "Traceback" not in result.stderr
+
+
+def test_show_cli_as_of_requires_yyyy_mm_dd(capsys) -> None:
+    import pytest
+
+    from pattern_index.cli import main
+
+    # date.fromisoformat on 3.11+ also takes basic and ISO-week forms; the flag
+    # promises YYYY-MM-DD only, so those are usage errors rather than silent reads.
+    for value in ("2026-W26", "20260630", "2026-6-30", "2026-02-30"):
+        with pytest.raises(SystemExit) as exc:
+            main(["show", "patterns", "--as-of", value])
+        assert exc.value.code == 2
+        err = capsys.readouterr().err
+        assert "pattern-index show" in err and "--as-of" in err and value in err
+
+
+def test_show_cli_reports_corpus_data_error_without_usage(tmp_path: Path, capsys) -> None:
+    from pattern_index.cli import main
+
+    folder = tmp_path / "example-pattern" / "applications"
+    folder.mkdir(parents=True)
+    bad = folder / "undated.md"
+    bad.write_text(
+        "---\npattern_id: example-pattern\nsource_repo: r\ndec_ref: DEC-001\n"
+        "target_domain: testing\noutcome: worked\n---\n\nNo applied_at.\n",
+        encoding="utf-8",
+    )
+
+    assert main(["show", str(tmp_path), "--as-of", "2026-03-01"]) == 1
+    err = capsys.readouterr().err
+    assert "usage:" not in err
+    assert str(bad) in err and "applied_at" in err
+
+
+def test_show_cli_does_not_turn_unreadable_file_into_usage_error(tmp_path: Path) -> None:
+    import pytest
+
+    from pattern_index.cli import main
+
+    folder = tmp_path / "example-pattern" / "applications"
+    folder.mkdir(parents=True)
+    (folder / "latin1.md").write_bytes(
+        b"---\npattern_id: example-pattern\napplied_at: 2026-01-01\n---\n\ncaf\xe9\n"
+    )
+
+    # Plain `show` keeps its pre-as-of behavior: the decode error propagates.
+    with pytest.raises(UnicodeDecodeError):
+        main(["show", str(tmp_path)])

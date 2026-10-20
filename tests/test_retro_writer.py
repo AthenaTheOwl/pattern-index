@@ -10,3 +10,12 @@ def test_build_retro_counts_checked_in_corpus() -> None:
     assert "- eval-as-gate: 5" in retro
     assert "- still-open: 2" in retro
     assert "- worked: 9" in retro
+
+
+def test_build_retro_reports_illustrative_seed_rows() -> None:
+    retro = build_retro("2026-Q3", Path("patterns"))
+
+    assert (
+        "- Illustrative seed rows (provenance: seed-illustrative): 10 of 15 "
+        "(10 closed, 6 worked)"
+    ) in retro

@@ -6,7 +6,7 @@ from collections import Counter
 from pathlib import Path
 
 from pattern_index.frontmatter import read_markdown
-from pattern_index.validators import iter_application_files
+from pattern_index.validators import SEED_PROVENANCE, iter_application_files
 
 
 def build_retro(quarter: str, patterns_dir: str | Path) -> str:
@@ -24,6 +24,7 @@ def build_retro(quarter: str, patterns_dir: str | Path) -> str:
     by_pattern = Counter(str(metadata.get("pattern_id", "")) for _path, metadata in applications)
     by_outcome = Counter(str(metadata.get("outcome", "")) for _path, metadata in applications)
     source_repos = sorted({str(metadata.get("source_repo", "")) for _path, metadata in applications})
+    seeds = [m for _path, m in applications if m.get("provenance") == SEED_PROVENANCE]
 
     lines = [
         f"# Pattern Index Retro - {quarter}",
@@ -33,6 +34,16 @@ def build_retro(quarter: str, patterns_dir: str | Path) -> str:
         f"- Applications reviewed: {len(applications)}",
         f"- Source repos represented: {len(source_repos)}",
         f"- Pattern IDs represented: {len(by_pattern)}",
+    ]
+    if seeds:
+        seed_closed = sum(1 for m in seeds if str(m.get("outcome", "")) != "still-open")
+        seed_worked = sum(1 for m in seeds if str(m.get("outcome", "")) == "worked")
+        lines.append(
+            f"- Illustrative seed rows (provenance: {SEED_PROVENANCE}): "
+            f"{len(seeds)} of {len(applications)} ({seed_closed} closed, "
+            f"{seed_worked} worked); these were not observed and are still counted below"
+        )
+    lines += [
         "",
         "## Count by pattern",
         "",
@@ -50,7 +61,7 @@ def build_retro(quarter: str, patterns_dir: str | Path) -> str:
             "",
             "## Narrative",
             "",
-            "The quarter shows a small seed corpus with enough variety to test the workflow. "
+            "The quarter shows a small corpus with enough variety to test the workflow. "
             "Eval gates and typed artifacts appear more than once, which gives the next mining pass a concrete taxonomy baseline.",
             "",
             "Open items are recent enough to wait for the 90-day review. Closed items carry one sentence of evidence so the report stays factual.",

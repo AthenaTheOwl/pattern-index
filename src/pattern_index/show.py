@@ -14,9 +14,13 @@ from datetime import date
 from pathlib import Path
 
 from pattern_index.frontmatter import read_markdown
-from pattern_index.validators import iter_application_files, parse_date
+from pattern_index.validators import SEED_PROVENANCE, iter_application_files, parse_date
 
 OUTCOME_ORDER = ["worked", "still-open", "did-not-work", "abandoned"]
+
+
+class CorpusDataError(ValueError):
+    """An application file cannot support the requested view."""
 
 
 @dataclass(frozen=True)
@@ -28,6 +32,11 @@ class Application:
     applied_at: str
     outcome: str
     narrative: str
+    provenance: str = ""
+
+    @property
+    def is_seed(self) -> bool:
+        return self.provenance == SEED_PROVENANCE
 
 
 @dataclass(frozen=True)
@@ -55,7 +64,7 @@ def load_applications(
         if as_of is not None:
             applied = parse_date(metadata.get("applied_at"))
             if applied is None:
-                raise ValueError(f"{path}: applied_at must be YYYY-MM-DD for an as-of view")
+                raise CorpusDataError(f"{path}: applied_at must be YYYY-MM-DD for an as-of view")
             if applied > as_of:
                 continue
             recorded = parse_date(metadata.get("outcome_recorded_at"))
@@ -70,6 +79,7 @@ def load_applications(
                 applied_at=str(metadata.get("applied_at", "")),
                 outcome=outcome,
                 narrative=_narrative(body),
+                provenance=str(metadata.get("provenance") or ""),
             )
         )
     return apps
@@ -106,7 +116,13 @@ def headline(apps: list[Application], rows: list[PatternRow]) -> str:
     transferred = sorted(rows, key=lambda r: (-r.repos, -r.applications))[0]
 
     if worked:
-        names = ", ".join(sorted({a.pattern_id for a in worked}))
+        # A pattern whose only worked rows are illustrative seed rows has not
+        # been observed to transfer; say so next to its name.
+        observed = {a.pattern_id for a in worked if not a.is_seed}
+        names = ", ".join(
+            name if name in observed else f"{name} (seed only)"
+            for name in sorted({a.pattern_id for a in worked})
+        )
         rate = f"{len(worked)}/{len(closed)}" if closed else f"{len(worked)}"
         return (
             f"of {len(closed)} closed reviews, {rate} transferred and held: {names}. "
@@ -119,11 +135,27 @@ def headline(apps: list[Application], rows: list[PatternRow]) -> str:
     )
 
 
+def seed_note(apps: list[Application]) -> str | None:
+    """Say how much of the summary rests on illustrative seed rows."""
+    seeds = [a for a in apps if a.is_seed]
+    if not seeds:
+        return None
+    worked = sum(1 for a in seeds if a.outcome == "worked")
+    closed = sum(1 for a in seeds if a.outcome != "still-open")
+    return (
+        f"{len(seeds)} of {len(apps)} applications are illustrative seed rows "
+        f"(provenance: {SEED_PROVENANCE}), not observed applications; they account "
+        f"for {closed} closed reviews and {worked} worked outcomes in these counts."
+    )
+
+
 def render(patterns_dir: str | Path | None = None, as_of: date | None = None) -> str:
     apps = load_applications(patterns_dir, as_of)
     rows = rank_patterns(apps)
 
     if not apps:
+        if as_of is not None:
+            return f"pattern index: no applications dated on or before {as_of.isoformat()}.\n"
         return "pattern index: no committed applications found.\n"
 
     repos = sorted({a.source_repo for a in apps})
@@ -155,6 +187,9 @@ def render(patterns_dir: str | Path | None = None, as_of: date | None = None) ->
 
     lines.append("")
     lines.append(f"finding: {headline(apps, rows)}")
+    note = seed_note(apps)
+    if note:
+        lines.append(f"seed: {note}")
     lines.append("")
     return "\n".join(lines)
 

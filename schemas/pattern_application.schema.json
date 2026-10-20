@@ -49,6 +49,10 @@
         "minLength": 1
       },
       "minItems": 1
+    },
+    "provenance": {
+      "description": "seed-illustrative marks a row written into the v0.1 seed corpus to exercise the workflow; its dec_ref and dates are not evidence of an observed application. Of the ten v0.1 seed rows, nine cite DEC ids that do not exist in their source repos, nine have applied_at dates before the source repo's first commit, and four have outcome dates before the file was committed. Absent means the row records an observed application.",
+      "enum": ["seed-illustrative"]
     }
   }
 }

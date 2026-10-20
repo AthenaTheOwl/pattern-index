@@ -62,3 +62,21 @@ def test_validate_outcomes_allows_recent_still_open(tmp_path: Path) -> None:
     write_application(tmp_path, applied_at="2026-05-01", outcome="still-open")
 
     assert validate_outcomes(tmp_path, as_of=date(2026, 6, 21)) == []
+
+
+def test_validate_schema_accepts_seed_provenance_and_rejects_unknown(tmp_path: Path) -> None:
+    target = write_application(tmp_path, applied_at="2026-05-01")
+    text = target.read_text(encoding="utf-8")
+    target.write_text(
+        text.replace("outcome_evidence:", "provenance: seed-illustrative\noutcome_evidence:"),
+        encoding="utf-8",
+    )
+    assert validate_schema(tmp_path) == []
+
+    target.write_text(
+        text.replace("outcome_evidence:", "provenance: real-ish\noutcome_evidence:"),
+        encoding="utf-8",
+    )
+    assert [error.message for error in validate_schema(tmp_path)] == [
+        "invalid provenance: real-ish"
+    ]
