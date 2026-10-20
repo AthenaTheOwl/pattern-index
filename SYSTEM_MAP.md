@@ -8,7 +8,7 @@
 
 ## Processing
 
-- `pattern_index.mine.dec_walker` reads DEC frontmatter and emits draft
+- `pattern_index.mine.dec_walker` reads DEC record fields and emits draft
   applications into `patterns/UNASSIGNED/applications/`.
 - `pattern_index.validators` checks required fields, taxonomy membership,
   date shape, outcome values, and the 90-day outcome rule.

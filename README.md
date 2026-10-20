@@ -3,8 +3,9 @@
 Fifteen pattern applications across nine repos, with thirteen closed outcome reviews.
 Ten of the fifteen are illustrative seed rows from the v0.1 data report, not observed
 applications. Of the five observed ones, three have closed, and all three held. pattern-index
-mines the `decisions/` ledgers for those transfers and then waits ninety days to find
-out which ones survived contact.
+files those transfers from the `decisions/` ledgers and then waits ninety days to find
+out which ones survived contact. The miner parses today's sibling ledgers but finds no
+candidates in them yet; see below.
 
 ## What it does
 
@@ -18,8 +19,14 @@ directory, finds the ones that borrow a principle from another domain or cite a 
 decision from another repo, and files each as a pattern application. Then it adds the
 field nobody writes upfront: the outcome, ninety days later. A pattern with two
 applications and no closed reviews is a hunch. A pattern that transferred twice and
-held both times is a rule. The mining is static analysis of DEC frontmatter — no model
+held both times is a rule. The mining is static analysis of DEC record fields — no model
 in the loop for that step.
+
+Today that mining finds nothing in the sibling ledgers. The miner parses their records,
+but it marks a record cross-domain only from a `domain:` or `references:` field, and no
+current sibling record carries either one. `mine` on any of them prints
+`No cross-domain DEC candidates found.` The `mine` example below shows the command and
+the record formats it reads; it does not produce candidates from today's ledgers.
 
 The artifact is `patterns/<pattern_id>/applications/<case>.md` plus one quarterly
 `pattern_index_retro.md`. The cadence is quarterly because ninety days is the point.
@@ -52,12 +59,12 @@ The list is ranked by how many applications each pattern carries, then by how ma
 worked; the `repos` column shows reach. The `outcomes` column records the outcome: of
 thirteen closed reviews, nine record a transfer that held. Six of those nine are
 seed rows. The ten applications marked `provenance: seed-illustrative` were written
-into the v0.1 seed to exercise the workflow: their `dec_ref` ids and `applied_at`
-dates were not observed in the source repos, and some of their outcome dates fall
-before the files were committed. Treat them as worked examples of the format. The
-five unmarked applications are observed ones, and their outcomes are corpus
-observations backed by the evidence lines in each file; they are not independent
-proof of every downstream domain claim.
+into the v0.1 seed to exercise the workflow: nine of the ten cite DEC ids that do not
+exist in their source repos, nine have `applied_at` dates before the source repo's
+first commit, and four have outcome dates before the file was committed. Treat them
+as worked examples of the format. The five unmarked applications are observed ones,
+and their outcomes are corpus observations backed by the evidence lines in each file;
+they are not independent proof of every downstream domain claim.
 
 For a date-filtered outcome view, use
 `python -m pattern_index show --as-of 2026-06-30`. Applications dated later are
@@ -110,6 +117,7 @@ python -m pattern_index show
 python -m pattern_index validate
 
 # mine a sibling repo's decisions/ for cross-domain candidates
+# (today's sibling ledgers give none: no record carries domain: or references:)
 python -m pattern_index mine \
   --repo ../procurement-negotiation-lab \
   --out patterns/
@@ -125,9 +133,10 @@ python -m pattern_index worklist --as-of 2026-07-05 --horizon-days 30
 
 A pattern application is, concretely, a DEC record in some repo's `decisions/`
 directory that either names a principle from a different domain than its host repo, or
-cites a prior DEC record from another repo as its origin. Both shapes are detectable
-from the record's fields: front matter, or the `**Field:**` / `Field:` lines under its
-title.
+cites a prior DEC record from another repo as its origin. The miner detects both shapes
+from the record's `domain:` and `references:` fields, read from front matter or from
+`**Field:**` lines under its title. Other fields (`id`, `date`, `status`) are also read
+from plain `Field:` lines and `## Status` / `## Date` sections.
 
 ## Layout
 

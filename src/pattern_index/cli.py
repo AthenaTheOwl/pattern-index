@@ -47,7 +47,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="pattern-index")
     subparsers = parser.add_subparsers(dest="command", required=True)
 
-    mine = subparsers.add_parser("mine", help="mine DEC frontmatter")
+    mine = subparsers.add_parser("mine", help="mine DEC record fields for cross-domain candidates")
     mine.add_argument("--repo", required=True, type=Path)
     mine.add_argument("--out", required=True, type=Path)
     mine.add_argument("--primary-domain")

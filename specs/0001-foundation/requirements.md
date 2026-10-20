@@ -13,9 +13,9 @@ Brand prefix: PIX (pattern-index).
   entries assigned to an absent `pattern_id` SHALL fail validation.
 - **R-PIX-003** — The DEC-miner SHALL read a target repo's
   `decisions/` directory and emit candidate pattern applications by
-  detecting cross-domain references in DEC frontmatter.
+  detecting cross-domain references in DEC record fields.
 - **R-PIX-004** — A candidate is "cross-domain" iff its DEC
-  frontmatter cites a prior DEC in a different repo, OR its `domain`
+  fields cite a prior DEC in a different repo, OR its optional `domain`
   field differs from the host repo's primary domain.
 
 ## Artifact requirements

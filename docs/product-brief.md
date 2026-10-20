@@ -16,7 +16,7 @@ which failed, and which are still open.
 
 v0.1 provides a runnable local workflow:
 
-- Mine DEC frontmatter from a target repo into draft pattern applications.
+- Mine DEC record fields from a target repo into draft pattern applications.
 - Validate checked-in application files against a canonical taxonomy.
 - Fail when a 90-day-old application still lacks a real outcome.
 - Generate a quarterly markdown report from the corpus.
