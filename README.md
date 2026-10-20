@@ -44,7 +44,7 @@ voice-lint-as-spec-check        2     2      2  worked 2
 citation-faithful-extraction    2     2      1  worked 1, did-not-work 1
 dec-then-implement              2     2      0  abandoned 2
 
-finding: of 13 closed reviews, 9/13 transferred and held: citation-faithful-extraction, eval-as-gate, typed-artifact-discipline, voice-lint-as-spec-check. 'eval-as-gate' shows the widest reach (4 repos, 5 applications).
+finding: of 13 closed reviews, 9/13 transferred and held: citation-faithful-extraction (seed only), eval-as-gate, typed-artifact-discipline, voice-lint-as-spec-check (seed only). 'eval-as-gate' shows the widest reach (4 repos, 5 applications).
 seed: 10 of 15 applications are illustrative seed rows (provenance: seed-illustrative), not observed applications; they account for 10 closed reviews and 6 worked outcomes in these counts.
 ```
 

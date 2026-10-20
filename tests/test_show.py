@@ -17,6 +17,17 @@ def test_render_summarizes_checked_in_corpus() -> None:
     assert "finding:" in output
 
 
+def test_finding_marks_patterns_that_held_only_in_seed_rows() -> None:
+    finding = next(
+        line for line in render(Path("patterns")).splitlines() if line.startswith("finding:")
+    )
+
+    assert "citation-faithful-extraction (seed only)" in finding
+    assert "voice-lint-as-spec-check (seed only)" in finding
+    assert "eval-as-gate," in finding
+    assert "typed-artifact-discipline," in finding
+
+
 def test_render_discloses_illustrative_seed_rows() -> None:
     apps = load_applications(Path("patterns"))
     seeds = sorted(f"{a.source_repo}-{a.dec_ref}" for a in apps if a.is_seed)

@@ -75,7 +75,7 @@ note = seed_note(apps)
 if note:
     st.warning(note)
 
-st.subheader("patterns, ranked by reach")
+st.subheader("patterns, ranked by applications")
 st.dataframe(
     [
         {

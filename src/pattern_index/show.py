@@ -116,7 +116,13 @@ def headline(apps: list[Application], rows: list[PatternRow]) -> str:
     transferred = sorted(rows, key=lambda r: (-r.repos, -r.applications))[0]
 
     if worked:
-        names = ", ".join(sorted({a.pattern_id for a in worked}))
+        # A pattern whose only worked rows are illustrative seed rows has not
+        # been observed to transfer; say so next to its name.
+        observed = {a.pattern_id for a in worked if not a.is_seed}
+        names = ", ".join(
+            name if name in observed else f"{name} (seed only)"
+            for name in sorted({a.pattern_id for a in worked})
+        )
         rate = f"{len(worked)}/{len(closed)}" if closed else f"{len(worked)}"
         return (
             f"of {len(closed)} closed reviews, {rate} transferred and held: {names}. "
